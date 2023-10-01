@@ -1,7 +1,7 @@
 """Binary sensor module."""
 import logging
 
-from deebot_client.commands import ResetLifeSpan, SetRelocationState
+from deebot_client.commands.json import ResetLifeSpan, SetRelocationState
 from deebot_client.events import LifeSpan
 from deebot_client.vacuum_bot import VacuumBot
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
@@ -24,15 +24,22 @@ async def async_setup_entry(
 ) -> None:
     """Add entities for passed config_entry in HA."""
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
-
+    
     new_devices = []
+    new_vacuum_devices = []
+    new_goat_devices = []
+
     for vacbot in hub.vacuum_bots:
         for component in LifeSpan:
-            new_devices.append(DeebotResetLifeSpanButtonEntity(vacbot, component))
-        new_devices.append(DeebotRelocateButtonEntity(vacbot))
+            new_vacuum_devices.append(DeebotResetLifeSpanButtonEntity(vacbot, component))
+        new_vacuum_devices.append(DeebotRelocateButtonEntity(vacbot))
 
     if new_devices:
         async_add_entities(new_devices)
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
 
 
 class DeebotResetLifeSpanButtonEntity(DeebotEntity, ButtonEntity):  # type: ignore

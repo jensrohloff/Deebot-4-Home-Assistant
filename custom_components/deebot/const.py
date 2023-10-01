@@ -1,6 +1,6 @@
 """Const module."""
 from collections.abc import Mapping
-
+from typing import Literal
 from deebot_client.events import (
     BatteryEvent,
     CleanLogEvent,
@@ -8,6 +8,7 @@ from deebot_client.events import (
     Event,
     FanSpeedEvent,
     LifeSpanEvent,
+    GoatLifeSpanEvent,
     RoomsEvent,
     StateEvent,
     StatsEvent,
@@ -71,6 +72,7 @@ VACUUMSTATE_TO_STATE = {
     VacuumState.PAUSED: STATE_PAUSED,
 }
 
+
 LAST_ERROR = "last_error"
 
 
@@ -80,6 +82,7 @@ REFRESH_STR_TO_EVENT_DTO: Mapping[str, type[Event]] = {
     "error": ErrorEvent,
     "fan_speed": FanSpeedEvent,
     "life_spans": LifeSpanEvent,
+    "goat_life_spans": GoatLifeSpanEvent,
     "rooms": RoomsEvent,
     "stats": StatsEvent,
     "status": StateEvent,

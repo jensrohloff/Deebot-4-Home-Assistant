@@ -17,7 +17,6 @@ from .hub import DeebotHub
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -27,11 +26,18 @@ async def async_setup_entry(
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
 
     new_devices = []
+    new_vacuum_devices = []
+    new_goat_devices = []
+
     for vacbot in hub.vacuum_bots:
-        new_devices.append(DeebotMopAttachedBinarySensor(vacbot))
+        new_vacuum_devices.append(DeebotMopAttachedBinarySensor(vacbot))
 
     if new_devices:
         async_add_entities(new_devices)
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
 
 
 class DeebotMopAttachedBinarySensor(DeebotEntity, BinarySensorEntity):  # type: ignore

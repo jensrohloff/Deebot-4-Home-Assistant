@@ -2,14 +2,23 @@
 import logging
 from typing import Any
 
-from deebot_client.commands import (
+from deebot_client.commands.json import (
     SetAdvancedMode,
     SetCarpetAutoFanBoost,
     SetCleanPreference,
     SetContinuousCleaning,
     SetTrueDetect,
+    SetAnimProtect,
+    SetRainDelay,
+    SetSafeProtect,
+    SetBorderSwitch,
+    SetRecognization,
+    SetChildLock,
+    SetMoveupWarning,
+    SetCrossMapBorderWarning,
 )
-from deebot_client.commands.common import SetEnableCommand
+
+from deebot_client.commands.json.common import SetEnableCommand
 from deebot_client.events import (
     AdvancedModeEvent,
     CarpetAutoFanBoostEvent,
@@ -17,6 +26,14 @@ from deebot_client.events import (
     ContinuousCleaningEvent,
     EnableEvent,
     TrueDetectEvent,
+    AnimProtectEvent,
+    RainDelayEvent,
+    SafeProtectEvent,
+    BorderSwitchEvent,
+    RecognizationEvent,
+    ChildLockEvent,
+    MoveupWarningEvent,
+    CrossMapBorderWarningEvent,
 )
 from deebot_client.vacuum_bot import VacuumBot
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
@@ -41,8 +58,12 @@ async def async_setup_entry(
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
 
     new_devices = []
+    new_vacuum_devices = []
+    new_goat_devices = []
+
     for vacbot in hub.vacuum_bots:
-        new_devices.extend(
+
+        new_vacuum_devices.extend(
             [
                 DeebotSwitchEntity(
                     vacbot,
@@ -106,9 +127,122 @@ async def async_setup_entry(
                 ),
             ]
         )
+        
+        new_goat_devices.extend(
+            [
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="anim_protect",
+                        name="Animal Protection",
+                        translation_key="anim_protect",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:paw-off-outline",
+                    ),
+                    AnimProtectEvent,
+                    SetAnimProtect,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="rain_protect",
+                        name="Rain Protect",
+                        translation_key="rain_protect",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:weather-pouring",
+                    ),
+                    RainDelayEvent,
+                    SetRainDelay,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="safe_protect",
+                        name="Charging Station Theft Protection",
+                        translation_key="safe_protect",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:robber",
+                    ),
+                    SafeProtectEvent,
+                    SetSafeProtect,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="border_switch",
+                        name="Border Cut Switch",
+                        translation_key="border_switch",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:border-all-variant",
+                    ),
+                    BorderSwitchEvent,
+                    SetBorderSwitch,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="recognization",
+                        name="AI Recognization",
+                        translation_key="recognization",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:teddy-bear",
+                    ),
+                    RecognizationEvent,
+                    SetRecognization,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="child_lock",
+                        name="Child Lock",
+                        translation_key="child_lock",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:human-male-boy",
+                    ),
+                    ChildLockEvent,
+                    SetChildLock,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="moveup_warning",
+                        name="Moveup Warning",
+                        translation_key="moveup_warning",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:arrow-up-bold-box-outline",
+                    ),
+                    MoveupWarningEvent,
+                    SetMoveupWarning,
+                ),
+                DeebotSwitchEntity(
+                    vacbot,
+                    SwitchEntityDescription(
+                        key="border_warning",
+                        name="Border Left Warning",
+                        translation_key="border_warning",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.CONFIG,
+                        icon="mdi:selection-marker",
+                    ),
+                    CrossMapBorderWarningEvent,
+                    SetCrossMapBorderWarning,
+                ),
+            ]
+        )
 
     if new_devices:
         async_add_entities(new_devices)
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
 
 
 class DeebotSwitchEntity(DeebotEntity, SwitchEntity):  # type: ignore

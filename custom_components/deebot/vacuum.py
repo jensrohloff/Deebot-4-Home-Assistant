@@ -4,27 +4,29 @@ from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
-from deebot_client.commands import (
+from deebot_client.commands.json import (
     Charge,
     Clean,
-    FanSpeedLevel,
     PlaySound,
     SetFanSpeed,
     SetRelocationState,
     SetWaterInfo,
 )
-from deebot_client.commands.clean import CleanAction, CleanArea, CleanMode
-from deebot_client.commands.custom import CustomCommand
+from deebot_client.commands.json.clean import CleanAction, CleanArea, CleanMode
+from deebot_client.commands.json.clean_V2 import MowerAction, CleanV2
+from deebot_client.commands.json.custom import CustomCommand
 from deebot_client.events import (
     BatteryEvent,
     CustomCommandEvent,
     ErrorEvent,
+    FanSpeedLevel,
     FanSpeedEvent,
     ReportStatsEvent,
     RoomsEvent,
     StateEvent,
+    StateEventV2,
 )
-from deebot_client.models import Room
+from deebot_client.models import Room, VacuumState
 from deebot_client.vacuum_bot import VacuumBot
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
@@ -116,6 +118,20 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
         self._rooms: list[Room] = []
         self._last_error: ErrorEvent | None = None
 
+        
+        if vacuum_bot.is_goat:
+            self.entity_description.icon = "mdi:robot-mower-outline"
+            self._attr_supported_features = (
+                VacuumEntityFeature.PAUSE
+                | VacuumEntityFeature.STOP
+                | VacuumEntityFeature.RETURN_HOME
+                | VacuumEntityFeature.BATTERY
+                | VacuumEntityFeature.SEND_COMMAND
+                | VacuumEntityFeature.STATE
+                | VacuumEntityFeature.START
+            )
+
+
     async def async_added_to_hass(self) -> None:
         """Set up the event listeners now that hass is ready."""
         await super().async_added_to_hass()
@@ -144,7 +160,15 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
 
         async def on_status(event: StateEvent) -> None:
             self._attr_state = VACUUMSTATE_TO_STATE[event.state]
+            if self._vacuum_bot.is_goat and event.state == VacuumState.CLEANING:
+                self._attr_state = "Mowing"
             self.async_write_ha_state()
+
+        async def on_status_v2(event: StateEventV2) -> None:
+            self._attr_state = VACUUMSTATE_TO_STATE[event.state]
+            if self._vacuum_bot.is_goat and event.state == VacuumState.CLEANING:
+                self._attr_state = "Mowing"
+            self.async_write_ha_state()            
 
         subscriptions = [
             self._vacuum_bot.events.subscribe(BatteryEvent, on_battery),
@@ -153,9 +177,12 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
             self._vacuum_bot.events.subscribe(FanSpeedEvent, on_fan_speed),
             self._vacuum_bot.events.subscribe(ReportStatsEvent, on_report_stats),
             self._vacuum_bot.events.subscribe(RoomsEvent, on_rooms),
-            self._vacuum_bot.events.subscribe(StateEvent, on_status),
         ]
 
+        subscriptions.append(self._vacuum_bot.events.subscribe(StateEvent, on_status))
+        if self._vacuum_bot.is_goat:
+            subscriptions.append(self._vacuum_bot.events.subscribe(StateEventV2, on_status_v2))
+        
         def unsubscribe() -> None:
             for sub in subscriptions:
                 sub()
@@ -203,15 +230,24 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
 
     async def async_stop(self, **kwargs: Any) -> None:
         """Stop the vacuum cleaner."""
-        await self._vacuum_bot.execute_command(Clean(CleanAction.STOP))
+        if self._vacuum_bot.is_goat:
+            await self._vacuum_bot.execute_command(CleanV2(MowerAction.STOP))
+        else:
+            await self._vacuum_bot.execute_command(Clean(CleanAction.STOP))
 
     async def async_pause(self) -> None:
         """Pause the vacuum cleaner."""
-        await self._vacuum_bot.execute_command(Clean(CleanAction.PAUSE))
+        if self._vacuum_bot.is_goat:
+            await self._vacuum_bot.execute_command(CleanV2(MowerAction.PAUSE))
+        else:
+            await self._vacuum_bot.execute_command(Clean(CleanAction.PAUSE))
 
     async def async_start(self) -> None:
         """Start the vacuum cleaner."""
-        await self._vacuum_bot.execute_command(Clean(CleanAction.START))
+        if self._vacuum_bot.is_goat:
+            await self._vacuum_bot.execute_command(CleanV2(MowerAction.START))
+        else:
+            await self._vacuum_bot.execute_command(Clean(CleanAction.START))
 
     async def async_locate(self, **kwargs: Any) -> None:
         """Locate the vacuum cleaner."""

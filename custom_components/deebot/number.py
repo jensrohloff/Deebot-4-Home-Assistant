@@ -1,6 +1,6 @@
 """Number module."""
-from deebot_client.commands import SetCleanCount, SetVolume
-from deebot_client.events import CleanCountEvent, VolumeEvent
+from deebot_client.commands.json import SetCleanCount, SetVolume, SetCutDirection, SetObstacleHeight
+from deebot_client.events import CleanCountEvent, VolumeEvent, CutDirectionEvent, ObstacleHeightEvent
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -22,12 +22,21 @@ async def async_setup_entry(
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
 
     new_devices = []
+    new_vacuum_devices = []
+    new_goat_devices = []
+
     for vacbot in hub.vacuum_bots:
         new_devices.append(VolumeEntity(vacbot))
-        new_devices.append(CleanCountEntity(vacbot))
+        new_goat_devices.append(CutDirectionEntity(vacbot))
+        new_goat_devices.append(ObstacleHeightEntity(vacbot))
+        new_vacuum_devices.append(CleanCountEntity(vacbot))
 
     if new_devices:
         async_add_entities(new_devices)
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
 
 
 class VolumeEntity(DeebotEntity, NumberEntity):  # type: ignore
@@ -80,6 +89,77 @@ class VolumeEntity(DeebotEntity, NumberEntity):  # type: ignore
         """Set new value."""
         await self._vacuum_bot.execute_command(SetVolume(int(value)))
 
+class CutDirectionEntity(DeebotEntity, NumberEntity):  # type: ignore
+    """Volume number entity."""
+
+    entity_description = NumberEntityDescription(
+        name="Cut Direction",
+        key="cut_direction",
+        translation_key="cut_direction",
+        entity_registry_enabled_default=True,
+        entity_category=EntityCategory.CONFIG,
+    )
+
+    _attr_native_min_value = 0
+    _attr_native_max_value = 180
+    _attr_native_step = 5.0
+    _attr_native_value: float | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """Set up the event listeners now that hass is ready."""
+        await super().async_added_to_hass()
+
+        async def on_direction(event: CutDirectionEvent) -> None:
+            self._attr_native_value = event.angle
+            self.async_write_ha_state()
+
+        self.async_on_remove(self._vacuum_bot.events.subscribe(CutDirectionEvent, on_direction))
+
+    @property
+    def icon(self) -> str | None:
+        """Return the icon to use in the frontend, if any."""
+
+        return "mdi:directions-fork"
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set new value."""
+        await self._vacuum_bot.execute_command(SetCutDirection(int(value)))
+
+class ObstacleHeightEntity(DeebotEntity, NumberEntity):  # type: ignore
+    """Level number entity."""
+
+    entity_description = NumberEntityDescription(
+        name="Obstacle Height Level",
+        key="obstacle_height",
+        translation_key="obstacle_height",
+        entity_registry_enabled_default=True,
+        entity_category=EntityCategory.CONFIG,
+    )
+
+    _attr_native_min_value = 1.0
+    _attr_native_max_value = 3.0
+    _attr_native_step = 1.0
+    _attr_native_value: float | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """Set up the event listeners now that hass is ready."""
+        await super().async_added_to_hass()
+
+        async def on_obs_height(event: ObstacleHeightEvent) -> None:
+            self._attr_native_value = event.level
+            self.async_write_ha_state()
+
+        self.async_on_remove(self._vacuum_bot.events.subscribe(ObstacleHeightEvent, on_obs_height))
+
+    @property
+    def icon(self) -> str | None:
+        """Return the icon to use in the frontend, if any."""
+
+        return "mdi:image-size-select-large"
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set new value."""
+        await self._vacuum_bot.execute_command(SetObstacleHeight(int(value)))
 
 class CleanCountEntity(DeebotEntity, NumberEntity):  # type: ignore
     """Clean count number entity."""

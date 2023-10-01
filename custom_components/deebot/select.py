@@ -1,7 +1,7 @@
 """Select module."""
 import logging
 
-from deebot_client.commands import SetWaterInfo
+from deebot_client.commands.json import SetWaterInfo
 from deebot_client.events import WaterAmount, WaterInfoEvent
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -25,11 +25,19 @@ async def async_setup_entry(
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
 
     new_devices = []
+    new_vacuum_devices = []
+    new_goat_devices = []
+
     for vacbot in hub.vacuum_bots:
-        new_devices.append(WaterInfoSelect(vacbot))
+        new_vacuum_devices.append(WaterInfoSelect(vacbot))
 
     if new_devices:
         async_add_entities(new_devices)
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
+
 
 
 class WaterInfoSelect(DeebotEntity, SelectEntity):  # type: ignore

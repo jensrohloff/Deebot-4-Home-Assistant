@@ -1,4 +1,5 @@
 """Sensor module."""
+import asyncio
 import logging
 from collections.abc import Callable
 from math import floor
@@ -11,8 +12,13 @@ from deebot_client.events import (
     Event,
     LifeSpan,
     LifeSpanEvent,
+    GoatLifeSpan,
+    GoatLifeSpanEvent,
     StatsEvent,
     TotalStatsEvent,
+    ProtectStateEvent,
+    WifiInfoEvent,
+    NewUWBCellEvent
 )
 from deebot_client.vacuum_bot import VacuumBot
 from homeassistant.components.sensor import (
@@ -35,6 +41,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
+from deebot_client.commands.json import GetGoatLifeSpan
+
 from .const import DOMAIN, LAST_ERROR
 from .entity import DeebotEntity
 from .hub import DeebotHub
@@ -51,14 +59,151 @@ async def async_setup_entry(
     hub: DeebotHub = hass.data[DOMAIN][config_entry.entry_id]
 
     new_devices = []
-    for vacbot in hub.vacuum_bots:
-        for component in LifeSpan:
-            new_devices.append(LifeSpanSensor(vacbot, component))
+    new_vacuum_devices = []
+    new_goat_devices = []
 
+    for vacbot in hub.vacuum_bots:
         new_devices.extend(
             [
-                LastCleaningJobSensor(vacbot),
                 LastErrorSensor(vacbot),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        key=ATTR_BATTERY_LEVEL,
+                        translation_key=ATTR_BATTERY_LEVEL,
+                        native_unit_of_measurement=PERCENTAGE,
+                        device_class=SensorDeviceClass.BATTERY,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                    BatteryEvent,
+                    lambda b: b.value,
+                ),
+            ]
+        )
+
+        
+        new_vacuum_devices.append(LifeSpanSensor(vacbot, LifeSpan.BRUSH))
+        new_vacuum_devices.append(LifeSpanSensor(vacbot, LifeSpan.FILTER))
+        new_vacuum_devices.append(LifeSpanSensor(vacbot, LifeSpan.SIDE_BRUSH))
+
+        new_goat_devices.append(LifeSpanSensor(vacbot, GoatLifeSpan.BLADE))
+        new_goat_devices.append(LifeSpanSensor(vacbot, GoatLifeSpan.LENSBRUSH))
+        
+        async def on_new_cell_event(event: NewUWBCellEvent) -> None:
+            async_add_entities([UWBCellSensor(vacbot, event.sn)])            
+        vacbot.events.subscribe(NewUWBCellEvent, on_new_cell_event)
+            
+        new_goat_devices.extend(
+            [
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="Animal Protect Active",
+                        key="is_anim_protect",
+                        icon="mdi:paw-off-outline",
+                        entity_registry_enabled_default=True,
+                    ),
+                    ProtectStateEvent,
+                    lambda e: e.is_anim_protect,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="Emergency Stop Active",
+                        key="is_e_stop",
+                        icon="mdi:car-brake-alert",
+                        entity_registry_enabled_default=True,
+                    ),
+                    ProtectStateEvent,
+                    lambda e: e.is_e_stop,
+                ),
+                    DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="PIN Lock Active",
+                        key="is_locked",
+                        icon="mdi:lock-alert-outline",
+                        entity_registry_enabled_default=True,
+                    ),
+                    ProtectStateEvent,
+                    lambda e: e.is_locked,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="Rain Delay Active",
+                        key="is_rain_delay",
+                        icon="mdi:clock-time-eight-outline",
+                        entity_registry_enabled_default=True,
+                    ),
+                    ProtectStateEvent,
+                    lambda e: e.is_rain_delay,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="Rain Protect Active",
+                        key="is_rain_protect",
+                        icon="mdi:weather-pouring",
+                        entity_registry_enabled_default=True,
+                    ),
+                    ProtectStateEvent,
+                    lambda e: e.is_rain_protect,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="Mac",
+                        key="wifi_mac",
+                        icon="mdi:desktop-classic",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                    WifiInfoEvent,
+                    lambda e: e.mac,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="SSID",
+                        key="wifi_ssid",
+                        icon="mdi:wifi",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                    WifiInfoEvent,
+                    lambda e: e.ssid,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="RSSI",
+                        key="wifi_rssi",
+                        icon="mdi:signal-variant",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                    WifiInfoEvent,
+                    lambda e: e.rssi,
+                ),
+                DeebotGenericSensor(
+                    vacbot,
+                    SensorEntityDescription(
+                        name="IP",
+                        key="wifi_ip",
+                        icon="mdi:ip-network-outline",
+                        entity_registry_enabled_default=True,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                    WifiInfoEvent,
+                    lambda e: e.ip,
+                ),
+            ]
+        )
+        
+        new_vacuum_devices.extend(
+            [
+                LastCleaningJobSensor(vacbot),
                 # Stats
                 DeebotGenericSensor(
                     vacbot,
@@ -134,24 +279,16 @@ async def async_setup_entry(
                     TotalStatsEvent,
                     lambda e: e.cleanings,
                 ),
-                DeebotGenericSensor(
-                    vacbot,
-                    SensorEntityDescription(
-                        key=ATTR_BATTERY_LEVEL,
-                        translation_key=ATTR_BATTERY_LEVEL,
-                        native_unit_of_measurement=PERCENTAGE,
-                        device_class=SensorDeviceClass.BATTERY,
-                        entity_category=EntityCategory.DIAGNOSTIC,
-                    ),
-                    BatteryEvent,
-                    lambda b: b.value,
-                ),
+                
             ]
-        )
+    )
 
     if new_devices:
         async_add_entities(new_devices)
-
+    if not vacbot.is_goat and new_vacuum_devices:
+        async_add_entities(new_vacuum_devices)
+    if vacbot.is_goat and new_goat_devices:
+        async_add_entities(new_goat_devices)
 
 T = TypeVar("T", bound=Event)
 
@@ -209,17 +346,29 @@ class LastErrorSensor(DeebotEntity, SensorEntity):  # type: ignore
 
         self.async_on_remove(self._vacuum_bot.events.subscribe(ErrorEvent, on_event))
 
+def __life_span_icons__(component: any):
+        
+    icon_map = {
+        LifeSpan.BRUSH: "mdi:broom",
+        LifeSpan.SIDE_BRUSH: "mdi:broom",
+        LifeSpan.FILTER: "mdi:air-filter",
+        GoatLifeSpan.BLADE: "mdi:saw-blade",
+        GoatLifeSpan.LENSBRUSH: "mdi:broom",
+        GoatLifeSpan.UWBCELL: "mdi:lighthouse-on",
+    }   
+
+    return icon_map[component]
 
 class LifeSpanSensor(DeebotEntity, SensorEntity):  # type: ignore
     """Life span sensor."""
 
-    def __init__(self, vacuum_bot: VacuumBot, component: LifeSpan):
+    def __init__(self, vacuum_bot: VacuumBot, component: any):
         """Initialize the Sensor."""
         key = f"life_span_{component.name.lower()}"
         entity_description = SensorEntityDescription(
             key=key,
             translation_key=key,
-            icon="mdi:air-filter" if component == LifeSpan.FILTER else "mdi:broom",
+            icon=__life_span_icons__(component),
             entity_registry_enabled_default=False,
             native_unit_of_measurement="%",
             entity_category=EntityCategory.DIAGNOSTIC,
@@ -240,6 +389,51 @@ class LifeSpanSensor(DeebotEntity, SensorEntity):  # type: ignore
                 self.async_write_ha_state()
 
         self.async_on_remove(self._vacuum_bot.events.subscribe(LifeSpanEvent, on_event))
+
+
+        async def on_event(event: GoatLifeSpanEvent) -> None:
+            if event.type == self._component:
+                self._attr_native_value = event.percent
+                self._attr_extra_state_attributes = {
+                    "remaining": floor(event.remaining / 60)
+                }
+                self.async_write_ha_state()
+
+        self.async_on_remove(self._vacuum_bot.events.subscribe(GoatLifeSpanEvent, on_event))
+
+class UWBCellSensor(DeebotEntity, SensorEntity):  # type: ignore
+    """Life span sensor."""
+
+    def __init__(self, vacuum_bot: VacuumBot, sn: str):
+        """Initialize the Sensor."""
+        entity_description = SensorEntityDescription(
+            key= f"life_span_{sn.lower()}",
+            name=f"UWB Cell {sn.lower()}",
+            icon=__life_span_icons__(GoatLifeSpan.UWBCELL),
+            entity_registry_enabled_default=False,
+            native_unit_of_measurement="%",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+        super().__init__(vacuum_bot, entity_description)
+        self._sn = sn
+
+    async def async_added_to_hass(self) -> None:
+        """Set up the event listeners now that hass is ready."""
+        await super().async_added_to_hass()
+
+        async def on_event(event: GoatLifeSpanEvent) -> None:
+            _LOGGER.debug(f"UWBCellSensor: {event}")
+            if event.type == GoatLifeSpan.UWBCELL:
+                _LOGGER.debug(f"Current Cell Enttiy is {self._sn}")
+                if event.sn == self._sn:
+                    self._attr_native_value = event.percent
+                    self._attr_extra_state_attributes = {
+                        "remaining": floor(event.remaining / 60)
+                    }
+                    _LOGGER.debug(f"Write new value {event.percent}")
+                    self.async_write_ha_state()
+
+        self.async_on_remove(self._vacuum_bot.events.subscribe(GoatLifeSpanEvent, on_event))
 
 
 class LastCleaningJobSensor(DeebotEntity, SensorEntity):  # type: ignore
