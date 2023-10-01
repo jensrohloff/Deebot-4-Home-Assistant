@@ -1,4 +1,6 @@
-# Home Assistant integration for deebot vacuums
+# Home Assistant integration for deebot vacuums (with GOAT G1 Support)
+
+!!! DRAFT: This is an development repo !!!
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 <a href="https://www.buymeacoffee.com/edenhaus" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-black.png" width="150px" height="28px" alt="Buy Me A Coffee" style="height: 28px !important;width: 150px !important;" ></a>
