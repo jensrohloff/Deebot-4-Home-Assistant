@@ -93,7 +93,6 @@ class CutDirectionEntity(DeebotEntity, NumberEntity):  # type: ignore
     """Volume number entity."""
 
     entity_description = NumberEntityDescription(
-        name="Cut Direction",
         key="cut_direction",
         translation_key="cut_direction",
         entity_registry_enabled_default=True,
@@ -129,7 +128,6 @@ class ObstacleHeightEntity(DeebotEntity, NumberEntity):  # type: ignore
     """Level number entity."""
 
     entity_description = NumberEntityDescription(
-        name="Obstacle Height Level",
         key="obstacle_height",
         translation_key="obstacle_height",
         entity_registry_enabled_default=True,

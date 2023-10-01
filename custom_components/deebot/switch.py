@@ -134,7 +134,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="anim_protect",
-                        name="Animal Protection",
                         translation_key="anim_protect",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -147,7 +146,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="rain_protect",
-                        name="Rain Protect",
                         translation_key="rain_protect",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -160,7 +158,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="safe_protect",
-                        name="Charging Station Theft Protection",
                         translation_key="safe_protect",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -173,7 +170,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="border_switch",
-                        name="Border Cut Switch",
                         translation_key="border_switch",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -186,7 +182,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="recognization",
-                        name="AI Recognization",
                         translation_key="recognization",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -212,7 +207,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="moveup_warning",
-                        name="Moveup Warning",
                         translation_key="moveup_warning",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,
@@ -225,7 +219,6 @@ async def async_setup_entry(
                     vacbot,
                     SwitchEntityDescription(
                         key="border_warning",
-                        name="Border Left Warning",
                         translation_key="border_warning",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.CONFIG,

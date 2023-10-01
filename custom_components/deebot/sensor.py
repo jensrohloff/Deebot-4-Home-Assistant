@@ -98,8 +98,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="Animal Protect Active",
                         key="is_anim_protect",
+                        translation_key="is_anim_protect",
                         icon="mdi:paw-off-outline",
                         entity_registry_enabled_default=True,
                     ),
@@ -109,8 +109,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="Emergency Stop Active",
                         key="is_e_stop",
+                        translation_key="is_e_stop",
                         icon="mdi:car-brake-alert",
                         entity_registry_enabled_default=True,
                     ),
@@ -120,8 +120,8 @@ async def async_setup_entry(
                     DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="PIN Lock Active",
                         key="is_locked",
+                        translation_key="is_locked",
                         icon="mdi:lock-alert-outline",
                         entity_registry_enabled_default=True,
                     ),
@@ -131,8 +131,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="Rain Delay Active",
                         key="is_rain_delay",
+                        translation_key="is_rain_delay",
                         icon="mdi:clock-time-eight-outline",
                         entity_registry_enabled_default=True,
                     ),
@@ -142,8 +142,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="Rain Protect Active",
                         key="is_rain_protect",
+                        translation_key="is_rain_protect",
                         icon="mdi:weather-pouring",
                         entity_registry_enabled_default=True,
                     ),
@@ -153,8 +153,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="Mac",
                         key="wifi_mac",
+                        translation_key="wifi_mac",
                         icon="mdi:desktop-classic",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.DIAGNOSTIC,
@@ -165,8 +165,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="SSID",
                         key="wifi_ssid",
+                        translation_key="wifi_ssid",
                         icon="mdi:wifi",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.DIAGNOSTIC,
@@ -177,8 +177,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="RSSI",
                         key="wifi_rssi",
+                        translation_key="wifi_rssi",
                         icon="mdi:signal-variant",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.DIAGNOSTIC,
@@ -189,8 +189,8 @@ async def async_setup_entry(
                 DeebotGenericSensor(
                     vacbot,
                     SensorEntityDescription(
-                        name="IP",
                         key="wifi_ip",
+                        translation_key="wifi_ip",
                         icon="mdi:ip-network-outline",
                         entity_registry_enabled_default=True,
                         entity_category=EntityCategory.DIAGNOSTIC,

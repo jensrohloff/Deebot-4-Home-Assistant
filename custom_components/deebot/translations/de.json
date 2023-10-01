@@ -64,6 +64,12 @@
     "number": {
       "volume": {
         "name": "Lautstärke"
+      },
+      "cut_direction": {
+        "name": "Mährichtung"
+      },
+      "obstacle_height": {
+        "name": "Hindernisvermeidungsmodus"
       }
     },
     "select": {
@@ -96,6 +102,12 @@
       "life_span_side_brush": {
         "name": "Seitenbürsten"
       },
+      "life_span_blade": {
+        "name": "Messer"
+      },
+      "life_span_lensbrush": {
+        "name": "Kammerabürste"
+      },
       "stats_area": {
         "name": "Reinigungsfläche"
       },
@@ -113,6 +125,33 @@
       },
       "stats_type": {
         "name": "Reinigungsmodus"
+      },
+      "is_anim_protect": {
+        "name": "Tierschutz aktiv"
+      },
+      "is_e_stop": {
+        "name": "Nothalt aktiv"
+      },
+      "is_locked": {
+        "name": "PIN Sperre aktiv"
+      },
+      "is_rain_delay": {
+        "name": "Regenverzögerung aktiv"
+      },
+      "is_rain_protect": {
+        "name": "Regenschutz aktiv"
+      },
+      "wifi_mac": {
+        "name": "Mac"
+      },
+      "wifi_ssid": {
+        "name": "SSID"
+      },
+      "wifi_rssi": {
+        "name": "RSSI"
+      },
+      "wifi_ip": {
+        "name": "IP"
       }
     },
     "switch": {
@@ -124,6 +163,30 @@
       },
       "continuous_cleaning": {
         "name": "Wiederaufnahme der Reinigung"
+      },
+      "anim_protect": {
+        "name": "Tierschutz"
+      },
+      "rain_protect": {
+        "name": "Regenschutz"
+      },
+      "safe_protect": {
+        "name": "Diebstahlsicherung"
+      },
+      "border_switch": {
+        "name": "Kanten mähen"
+      },
+      "recognization": {
+        "name": "AI Hinderniserkennung"
+      },
+      "child_lock": {
+        "name": "Kindersicherung"
+      },
+      "moveup_warning": {
+        "name": "Warnung Mäher angehoben"
+      },
+      "border_warning": {
+        "name": "Warnung Außerhalb der Karte"
       }
     },
     "vacuum": {

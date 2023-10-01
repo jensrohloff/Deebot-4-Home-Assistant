@@ -70,6 +70,12 @@
       },
       "volume": {
         "name": "Volume"
+      },
+      "cut_direction": {
+        "name": "Cut Direction"
+      },
+      "obstacle_height": {
+        "name": "Obstacle Height Level"
       }
     },
     "select": {
@@ -102,6 +108,12 @@
       "life_span_side_brush": {
         "name": "Side brush"
       },
+      "life_span_blade": {
+        "name": "Blade"
+      },
+      "life_span_lensbrush": {
+        "name": "Lens Brush"
+      },
       "stats_area": {
         "name": "Stats area"
       },
@@ -119,6 +131,33 @@
       },
       "stats_type": {
         "name": "Stats type"
+      },
+      "is_anim_protect": {
+        "name": "Animal Protect Active"
+      },
+      "is_e_stop": {
+        "name": "Emergency Stop Active"
+      },
+      "is_locked": {
+        "name": "PIN Lock Active"
+      },
+      "is_rain_delay": {
+        "name": "Rain Delay Active"
+      },
+      "is_rain_protect": {
+        "name": "Rain Protect Active"
+      },
+      "wifi_mac": {
+        "name": "Mac"
+      },
+      "wifi_ssid": {
+        "name": "SSID"
+      },
+      "wifi_rssi": {
+        "name": "RSSI"
+      },
+      "wifi_ip": {
+        "name": "IP"
       }
     },
     "switch": {
@@ -136,6 +175,30 @@
       },
       "true_detect": {
         "name": "True detect"
+      },
+      "anim_protect": {
+        "name": "Animal Protection"
+      },
+      "rain_protect": {
+        "name": "Rain Protect"
+      },
+      "safe_protect": {
+        "name": "Charging Station Theft Protection"
+      },
+      "border_switch": {
+        "name": "Border Cut Switch"
+      },
+      "recognization": {
+        "name": "AI Recognization"
+      },
+      "child_lock": {
+        "name": "Child Lock"
+      },
+      "moveup_warning": {
+        "name": "Moveup Warning"
+      },
+      "border_warning": {
+        "name": "Border Left Warning"
       }
     },
     "vacuum": {
