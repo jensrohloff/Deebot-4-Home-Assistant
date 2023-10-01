@@ -108,6 +108,10 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
     )
     _attr_fan_speed_list = [level.display_name for level in FanSpeedLevel]
 
+    _command_start = Clean(CleanAction.START)
+    _command_stop = Clean(CleanAction.STOP)
+    _command_pause = Clean(CleanAction.PAUSE)
+
     def __init__(self, vacuum_bot: VacuumBot):
         """Initialize the Deebot Vacuum."""
         super().__init__(
@@ -130,6 +134,9 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
                 | VacuumEntityFeature.STATE
                 | VacuumEntityFeature.START
             )
+            self._command_start = CleanV2(MowerAction.START)
+            self._command_stop = CleanV2(MowerAction.STOP)
+            self._command_pause = CleanV2(MowerAction.PAUSE)
 
 
     async def async_added_to_hass(self) -> None:
@@ -230,24 +237,15 @@ class DeebotVacuum(DeebotEntity, StateVacuumEntity):  # type: ignore
 
     async def async_stop(self, **kwargs: Any) -> None:
         """Stop the vacuum cleaner."""
-        if self._vacuum_bot.is_goat:
-            await self._vacuum_bot.execute_command(CleanV2(MowerAction.STOP))
-        else:
-            await self._vacuum_bot.execute_command(Clean(CleanAction.STOP))
+        await self._vacuum_bot.execute_command(self._command_stop)
 
     async def async_pause(self) -> None:
         """Pause the vacuum cleaner."""
-        if self._vacuum_bot.is_goat:
-            await self._vacuum_bot.execute_command(CleanV2(MowerAction.PAUSE))
-        else:
-            await self._vacuum_bot.execute_command(Clean(CleanAction.PAUSE))
+        await self._vacuum_bot.execute_command(self._command_pause)
 
     async def async_start(self) -> None:
         """Start the vacuum cleaner."""
-        if self._vacuum_bot.is_goat:
-            await self._vacuum_bot.execute_command(CleanV2(MowerAction.START))
-        else:
-            await self._vacuum_bot.execute_command(Clean(CleanAction.START))
+        await self._vacuum_bot.execute_command(self._command_start)
 
     async def async_locate(self, **kwargs: Any) -> None:
         """Locate the vacuum cleaner."""
